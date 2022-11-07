@@ -1,0 +1,64 @@
+#+TITLE:README
+#+AUTHOR: Karim Aziiev
+#+EMAIL: karim.aziiev@gmail.com
+* quicktype
+
+Emacs integration for [[https://quicktype.io/][quicktype]].
+
+** Requirements
+
++ Emacs >= 27.1
++ transient
++ quicktype
+
+** Installation
+
+Firstly ensure that you have installed ~quicktype~ program.
+
+#+begin_src shell
+npm i -g quicktype
+#+end_src
+
+*** Manual
+
+Download the source code and put it wherever you like and add the directory to the load path:
+
+#+begin_src elisp :eval no
+
+(add-to-list 'load-path "/path/to/quicktype)
+
+(require 'quicktype)
+
+#+end_src
+
+*** With use-package and straight
+
+#+begin_src elisp :eval no
+
+(use-package quicktype
+	:straight (quicktype
+			       :repo "KarimAziev/quicktype"
+			       :type git
+			       :host github)
+	:commands (quicktype))
+
+#+end_src
+
+** Usage
+
+*** ~M-x quicktype~
+
+Dispatch transient popup with available arguments and execute quicktype.
+
+By default it will generate types from region or current buffer. You can also specify file, URL, or data directory (option --src).
+
+** Customization
+
+*** ~quicktype-src-modes-alist~
+Alist of quicktype languages and modes.
+*** ~quicktype-default-switches~
+Alist of default quicktype switches.
+*** ~quicktype-lang-modes-alist~
+Alist of quicktype languages and modes.
+*** ~quicktype-url-reader~
+~url~ reader should three args - prompt, initial input and history.
