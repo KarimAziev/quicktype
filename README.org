@@ -1,6 +1,6 @@
-#+TITLE:README
 #+AUTHOR: Karim Aziiev
 #+EMAIL: karim.aziiev@gmail.com
+
 * quicktype
 
 Emacs integration for [[https://quicktype.io/][quicktype]].
@@ -50,7 +50,11 @@ Download the source code and put it wherever you like and add the directory to t
 
 Dispatch transient popup with available arguments and execute quicktype.
 
-By default it will generate types from region or current buffer. You can also specify file, URL, or data directory (option --src).
+By default it will generate types from region or current buffer. You can also specify file, URL, or data directory (option =--src=).
+
+[[./quicktype-transient.png]]
+
+
 
 ** Customization
 
