@@ -315,7 +315,7 @@ Invoke CALLBACK without args."
                           'display-buffer-in-direction))))))
 
 (defun quicktype-get-input-json ()
-  "Search for json in active region or 'kill-ring'.
+  "Search for json in active region or `kill-ring'.
 If not found, return buffer string."
   (or
    (let ((reg (quicktype-get-region)))
