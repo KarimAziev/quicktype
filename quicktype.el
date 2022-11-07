@@ -537,27 +537,7 @@ INITIAL-INPUT and HISTORY used only for url."
     :choices ("original" "pascalcamel" "lowerCase"))]
   ["Actions"
    ("RET" "Run" quicktype-run)
-   ("<return>" "Run" quicktype-run)
-   ("C-c C-a" "Show arguments"
-    (lambda () (interactive)
-      (let* ((args
-              (transient-args transient-current-command))
-             (formateted-args
-              (mapcar
-               (apply-partially #'format "%s")
-               args))
-             (cmd "quicktype"))
-        (message
-         (concat
-          (if cmd
-              (propertize
-               (concat cmd " ")
-               'face 'transient-argument)
-            "")
-          (propertize
-           (string-join formateted-args " ")
-           'face 'success)))))
-    :transient t)])
+   ("<return>" "Run" quicktype-run)])
 
 (provide 'quicktype)
 ;;; quicktype.el ends here
