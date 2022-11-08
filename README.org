@@ -5,6 +5,8 @@
 
 Emacs integration for [[https://quicktype.io/][quicktype]].
 
+[[./demo.gif]]
+
 ** Requirements
 
 + Emacs >= 27.1
@@ -36,10 +38,7 @@ Download the source code and put it wherever you like and add the directory to t
 #+begin_src elisp :eval no
 
 (use-package quicktype
-	:straight (quicktype
-			       :repo "KarimAziev/quicktype"
-			       :type git
-			       :host github)
+	:straight (:repo "KarimAziev/quicktype" :type git :host github)
 	:commands (quicktype))
 
 #+end_src
@@ -51,10 +50,6 @@ Download the source code and put it wherever you like and add the directory to t
 Dispatch transient popup with available arguments and execute quicktype.
 
 By default it will generate types from region or current buffer. You can also specify file, URL, or data directory (option =--src=).
-
-[[./quicktype-transient.png]]
-
-
 
 ** Customization
 
