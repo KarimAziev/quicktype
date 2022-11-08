@@ -257,8 +257,6 @@ Invoke CALLBACK without args."
   (let* ((buff-name (generate-new-buffer-name command))
          (buffer (get-buffer-create buff-name))
          (proc))
-    (message "|	Buff Name 	|	%s"
-             buff-name)
     (progn (switch-to-buffer buffer)
            (with-current-buffer buffer
              (setq proc (apply #'start-process buff-name buffer
@@ -318,7 +316,7 @@ Invoke CALLBACK without args."
   "Search for json in active region or `kill-ring'.
 If not found, return buffer string."
   (or
-   (let ((reg (quicktype-get-region)))
+   (when-let ((reg (quicktype-get-region)))
      (setq reg (string-trim reg))
      (quicktype-try-json-from-string
       reg
@@ -365,25 +363,21 @@ If not found, return buffer string."
          (src-lang (quicktype-get-arg-value"--src-lang" args))
          (lang (quicktype-get-arg-value "--lang" args))
          (out-file (quicktype-get-arg-value "--out" args)))
-    (print args)
     (cond
      ((and
        (not input-args)
        (not out-file)
        (equal src-lang "json")
        (equal lang "ts"))
-      (message "first")
       (quicktype-string (quicktype-get-input-json) args))
      ((and
        (not input-args)
        (not out-file))
-      (message "second")
       (quicktype-string
        (or (quicktype-get-region)
            (buffer-substring-no-properties (point-min) (point-max)))
        args))
      (t
-      (print args)
       (apply #'quicktype-run-with-args "quicktype" args)))))
 
 (transient-define-argument quicktype--additional-schema ()
