@@ -284,7 +284,7 @@ Invoke CALLBACK without args."
                            (cdr (assoc (quicktype-get-arg-value "--lang" args)
                                        quicktype-lang-modes-alist)))
                         (message "finished")))
-                  (user-error (format "%s\n%s" command output))))))
+                  (user-error "%s\n%s" command output)))))
            (require 'comint)
            (when (fboundp 'comint-output-filter)
              (set-process-filter proc #'comint-output-filter)))))
