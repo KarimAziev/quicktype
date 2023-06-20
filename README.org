@@ -36,11 +36,11 @@ Download the source code and put it wherever you like and add the directory to t
 *** With use-package and straight
 
 #+begin_src elisp :eval no
-
 (use-package quicktype
-	:straight (:repo "KarimAziev/quicktype" :type git :host github)
-	:commands (quicktype))
-
+  :straight (:repo "KarimAziev/quicktype"
+                   :type git
+                   :host github)
+  :commands (quicktype))
 #+end_src
 
 ** Usage
