@@ -164,17 +164,17 @@ See `(elisp) Buffer Display Action Alists' for details."
                    (let ((map (make-sparse-keymap)))
                      (if buffer-read-only
                          (define-key map (kbd "q")
-                                     'kill-this-buffer)
+                                     #'kill-this-buffer)
                        (define-key map (kbd "q")
-                                   'self-insert-command))
+                                   #'self-insert-command))
                      (add-hook
                       'read-only-mode-hook
                       (lambda ()
                         (if buffer-read-only
                             (define-key map (kbd "q")
-                                        'kill-this-buffer)
+                                        #'kill-this-buffer)
                           (define-key map (kbd "q")
-                                      'self-insert-command)))
+                                      #'self-insert-command)))
                       t)
                      (when keymaps
                        (setq map (make-composed-keymap
@@ -482,14 +482,16 @@ INITIAL-INPUT and HISTORY used only for url."
   "Return arguments for quicktype."
   (let ((args (transient-args transient-current-command)))
     (flatten-list
-     (mapcar (lambda (str) (if-let ((space-pos (string-match-p "[\s\t]" str)))
-                          (list (substring str 0 space-pos)
-                                (substring str (1+ space-pos)))
-                        str))
+     (mapcar (lambda (str)
+               (if-let ((space-pos (string-match-p "[\s\t]" str)))
+                   (list (substring str 0 space-pos)
+                         (substring str (1+ space-pos)))
+                 str))
              args))))
 
+;;;###autoload (autoload 'quicktype "quicktype" nil t)
 (transient-define-prefix quicktype ()
-  "Transient api for quicktype."
+  "Transient menu for `quicktype'."
   :value quicktype-default-switches
   ["Common Arguments"
    ("l" quicktype--lang)
