@@ -47,8 +47,10 @@
 
 ;;; Code:
 
-
+(eval-and-compile
+  (require 'cc-mode))
 (require 'transient)
+
 
 (defcustom quicktype-url-reader 'read-string
   "URL reader should three args - prompt, initial input and history."
@@ -99,14 +101,75 @@
     (string-trim (buffer-substring-no-properties
                   (region-beginning) (region-end)))))
 
+(defvar quicktype-js-syntax-table
+  (let ((table (make-syntax-table)))
+    (c-populate-syntax-table table)
+    (modify-syntax-entry ?$ "_" table)
+    (modify-syntax-entry ?`"\"" table)
+    table)
+  "Syntax table for JavaScript, including modifications for specific characters.")
+
+(defun quicktype--syntax-propertize-regexp (end)
+  "Highlight JavaScript import regex as string syntax.
+
+Argument END is the position in the buffer up to which the syntax propertize
+function should apply."
+  (let ((ppss (syntax-ppss)))
+    (when (eq (nth 3 ppss) ?/)
+      (goto-char (nth 8 ppss))
+      (when (looking-at
+             "/\\(?:[^/[\\]\\|\\\\.\\|\\[\\(?:[^]\\]\\|\\\\.\\)*]\\)*\\(/?\\)")
+        (when (> end (match-end 1))
+          (setq end (match-end 1)))
+        (put-text-property (match-beginning 1) end
+                           'syntax-table (string-to-syntax "\"/"))
+        (goto-char end)))))
+
+(defun quicktype--syntax-propertize (start end)
+  "Highlight JavaScript import syntax elements.
+
+Argument START is the position in the buffer from which to start syntax
+propertization.
+
+Argument END is the position in the buffer at which to stop syntax
+propertization."
+  (goto-char start)
+  (quicktype--syntax-propertize-regexp end)
+  (funcall
+   (syntax-propertize-rules
+    ("\\(?:^\\|[=([{,:;|&!]\\|\\_<return\\_>\\)\\(?:[ \t]\\)*\\(/\\)[^/*]"
+     (1 (ignore
+         (forward-char -1)
+         (when (or (not (memq (char-after (match-beginning 0)) '(?\s ?\t)))
+                   (save-excursion
+                     (goto-char (match-beginning 0))
+                     (forward-comment (- (point)))
+                     (memq (char-before)
+                           (eval-when-compile (append "=({[,:;" '(nil))))))
+           (put-text-property (match-beginning 1)
+                              (match-end 1)
+                              'syntax-table (string-to-syntax "\"/"))
+           (quicktype--syntax-propertize-regexp end)))))
+    ("\\`\\(#\\)!" (1 "< b")))
+   (point) end))
+
 (defmacro quicktype-with-temp-js-buffer (&rest body)
   "Evaluate BODY in temporarily buffer with JavaScript syntax."
   `(with-temp-buffer
      (erase-buffer)
-     (delay-mode-hooks
-       (when (fboundp 'typescript-mode)
-         (typescript-mode)))
-     ,@body))
+     (progn
+       (set-syntax-table quicktype-js-syntax-table)
+       (setq-local open-paren-in-column-0-is-defun-start nil)
+       (setq-local syntax-propertize-function #'quicktype--syntax-propertize)
+       (setq-local parse-sexp-ignore-comments t)
+       (setq-local comment-start "// ")
+       (setq-local comment-start-skip "\\(//+\\|/\\*+\\)\\s *")
+       (setq-local comment-end "")
+       (syntax-ppss-flush-cache (point-min))
+       (quicktype--syntax-propertize
+        (point-min)
+        (point-max))
+       ,@body)))
 
 (defun quicktype--f-parent (path)
   "Return the parent directory to PATH without slash."
@@ -313,36 +376,39 @@ Invoke CALLBACK without args."
           (quicktype-show (buffer-string)
                           'display-buffer-in-direction))))))
 
+(defun quicktype--json-from-region ()
+  "Extract JSON from selected region and process it with Node.js."
+  (when-let ((reg (quicktype-get-region)))
+    (quicktype-try-json-from-string
+     reg
+     (lambda (&rest _ignored)
+       (quicktype-with-temp-js-buffer
+        (insert reg)
+        (when-let* ((end (progn
+                           (re-search-backward
+                            "[}]" nil t 1)
+                           (forward-char 1)
+                           (point)))
+                    (start (progn (forward-sexp -1)
+                                  (point)))
+                    (node (executable-find "node"))
+                    (code
+                     (prin1-to-string
+                      (format
+                       "JSON.stringify(%s)"
+                       (buffer-substring-no-properties
+                        start
+                        end))
+                      t)))
+          (let ((status (call-process node nil t nil "-p" code)))
+            (when (zerop status)
+              (string-trim (buffer-string))))))))))
+
 (defun quicktype-get-input-json ()
   "Search for json in active region or `kill-ring'.
 If not found, return buffer string."
   (or
-   (when-let ((reg (quicktype-get-region)))
-     (setq reg (string-trim reg))
-     (quicktype-try-json-from-string
-      reg
-      (lambda (&rest _ignored)
-        (quicktype-with-temp-js-buffer
-         (insert reg)
-         (when-let* ((end (progn
-                            (re-search-backward
-                             "[}]" nil t 1)
-                            (forward-char 1)
-                            (point)))
-                     (start (progn (forward-sexp -1)
-                                   (point)))
-                     (node (executable-find "node"))
-                     (code
-                      (prin1-to-string
-                       (format
-                        "JSON.stringify(%s)"
-                        (buffer-substring-no-properties
-                         start
-                         end))
-                       t)))
-           (erase-buffer)
-           (call-process node nil t nil "-p" code)
-           (string-trim (buffer-string)))))))
+   (quicktype--json-from-region)
    (quicktype-find-json-in-kill-ring)
    (buffer-substring-no-properties (point-min)
                                    (point-max))))
