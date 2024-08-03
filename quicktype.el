@@ -228,7 +228,7 @@ See `(elisp) Buffer Display Action Alists' for details."
                    (let ((map (make-sparse-keymap)))
                      (if buffer-read-only
                          (define-key map (kbd "q")
-                                     #'kill-this-buffer)
+                                     #'kill-current-buffer)
                        (define-key map (kbd "q")
                                    #'self-insert-command))
                      (add-hook
@@ -236,7 +236,7 @@ See `(elisp) Buffer Display Action Alists' for details."
                       (lambda ()
                         (if buffer-read-only
                             (define-key map (kbd "q")
-                                        #'kill-this-buffer)
+                                        #'kill-current-buffer)
                           (define-key map (kbd "q")
                                       #'self-insert-command)))
                       t)
