@@ -189,7 +189,7 @@ propertization."
 
 (defun quicktype-momentary-popup-minibuffer-select-window ()
   "Select minibuffer window if it is active."
-  (when-let ((wind (active-minibuffer-window)))
+  (when-let* ((wind (active-minibuffer-window)))
     (select-window wind)))
 
 (defun quicktype-show (content display-action &rest setup-args)
@@ -266,7 +266,7 @@ See `(elisp) Buffer Display Action Alists' for details."
 (defun quicktype--prettier-format-string (string &rest options)
   "Apply prettier on STRING with OPTIONS.
 Return list of two elements: status (t or nil) and string with result."
-  (when-let ((prettier-cmd (let ((dir default-directory)
+  (when-let* ((prettier-cmd (let ((dir default-directory)
                                  (node-modules)
                                  (found))
                              (while
@@ -355,7 +355,7 @@ Invoke CALLBACK without args."
 
 (defun quicktype-string (string &optional args)
   "Execute quicktype on STRING with ARGS."
-  (when-let ((cmd (executable-find "quicktype")))
+  (when-let* ((cmd (executable-find "quicktype")))
     (with-temp-buffer
       (insert string)
       (let ((status (apply
@@ -378,7 +378,7 @@ Invoke CALLBACK without args."
 
 (defun quicktype--json-from-region ()
   "Extract JSON from selected region and process it with Node.js."
-  (when-let ((reg (quicktype-get-region)))
+  (when-let* ((reg (quicktype-get-region)))
     (quicktype-try-json-from-string
      reg
      (lambda (&rest _ignored)
@@ -550,7 +550,7 @@ INITIAL-INPUT and HISTORY used only for url."
   (let ((args (transient-args transient-current-command)))
     (flatten-list
      (mapcar (lambda (str)
-               (if-let ((space-pos (string-match-p "[\s\t]" str)))
+               (if-let* ((space-pos (string-match-p "[\s\t]" str)))
                    (list (substring str 0 space-pos)
                          (substring str (1+ space-pos)))
                  str))
